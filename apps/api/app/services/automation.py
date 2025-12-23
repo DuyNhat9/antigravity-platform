@@ -15,7 +15,7 @@ def run_applescript(script: str):
         return None
 
 class AutomationService:
-    def __init__(self, app_name: str = "Cursor"):
+    def __init__(self, app_name: str = "Antigravity"):
         self.app_name = app_name
 
     async def trigger_agent(self, role: str, description: str):
@@ -35,7 +35,7 @@ class AutomationService:
         tell application "{self.app_name}" to activate
         delay 0.5
         tell application "System Events"
-            -- Open Chat (Cmd+L is typical for Cursor)
+            -- Open Chat (Cmd+L is typical for Cursor and Antigravity)
             keystroke "l" using {{command down}}
             delay 0.5
             -- Type the mandate
@@ -53,4 +53,4 @@ class AutomationService:
              await blackboard.add_log("System", "Failed to send UI trigger. Check Accessibility permissions.")
 
 # Singleton
-automation = AutomationService(app_name=os.getenv("IDE_APP_NAME", "Cursor"))
+automation = AutomationService(app_name=os.getenv("IDE_APP_NAME", "Antigravity"))
