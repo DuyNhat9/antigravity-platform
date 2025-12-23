@@ -79,7 +79,7 @@ async def disconnect(sid):
 
 def start():
     """Entry point for poetry/scripts"""
-    uvicorn.run("apps.api.main:app_socketio", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("apps.api.main:app_socketio", host="0.0.0.0", port=8080, reload=True)
 
 if __name__ == "__main__":
     start()

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:web\" \"npm run dev:api\"",
     "dev:web": "cd apps/web && npm run dev",
-    "dev:api": "export PYTHONPATH=$PYTHONPATH:$(pwd) && /Users/davidtran/Documents/mcp/.venv/bin/python3 -m uvicorn apps.api.main:app_socketio --host 0.0.0.0 --port 8000 --reload"
+    "dev:api": "export PYTHONPATH=$PYTHONPATH:$(pwd) && /Users/davidtran/Documents/mcp/.venv/bin/python3 -m uvicorn apps.api.main:app_socketio --host 0.0.0.0 --port 8080 --reload"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
