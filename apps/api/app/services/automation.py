@@ -33,16 +33,18 @@ class AutomationService:
         # 4. Press Enter
         script = f'''
         tell application "{self.app_name}" to activate
-        delay 0.5
+        delay 1.0
         tell application "System Events"
-            -- Open Chat (Cmd+L is typical for Cursor and Antigravity)
-            keystroke "l" using {{command down}}
-            delay 0.5
-            -- Type the mandate
-            keystroke "{prompt}"
-            delay 0.2
-            -- Enter to send
-            key code 36
+            tell process "{self.app_name}"
+                -- Open Chat (Cmd+L for Cursor/Antigravity)
+                keystroke "l" using {{command down}}
+                delay 1.0
+                -- Type the mandate
+                keystroke "{prompt}"
+                delay 0.5
+                -- Enter to send
+                key code 36
+            end tell
         end tell
         '''
         
