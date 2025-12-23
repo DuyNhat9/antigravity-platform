@@ -24,18 +24,22 @@ async def poll_mcp_for_tasks(role: str):
         while True:
             try:
                 # We check the blackboard directly since we are in the same project context
-                pending_tasks = [t for t in blackboard.tasks if t.role == role and t.status == TaskStatus.PENDING]
-                
-                if pending_tasks:
-                    task = pending_tasks[0]
-                    print(f"🎯 TASK DETECTED: {task.id} - {task.description}")
+                if blackboard.auto_trigger_enabled:
+                    pending_tasks = [t for t in blackboard.tasks if t.role == role and t.status == TaskStatus.PENDING]
                     
-                    # Trigger UI
-                    await automation.trigger_agent(role, task.description)
-                    
-                    # Mark as In Progress immediately to avoid double-triggering
-                    await blackboard.update_task_status(task.id, TaskStatus.IN_PROGRESS)
-                    print(f"🚀 {role} triggered autonomously.")
+                    if pending_tasks:
+                        task = pending_tasks[0]
+                        print(f"🎯 TASK DETECTED: {task.id} - {task.description}")
+                        
+                        # Trigger UI
+                        await automation.trigger_agent(role, task.description)
+                        
+                        # Mark as In Progress immediately to avoid double-triggering
+                        await blackboard.update_task_status(task.id, TaskStatus.IN_PROGRESS)
+                        print(f"🚀 {role} triggered autonomously.")
+                else:
+                    # Optional: print or log that we are waiting for auto-trigger to be enabled
+                    pass
 
             except Exception as e:
                 print(f"❌ Poller Error: {e}")

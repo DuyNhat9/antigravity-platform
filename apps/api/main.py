@@ -69,6 +69,11 @@ async def connect(sid, environ):
     await sio.emit('message', {'data': 'Connected to Antigravity API'}, room=sid)
 
 @sio.event
+async def toggle_auto_trigger(sid, data):
+    enabled = data.get("enabled", False)
+    await blackboard.set_auto_trigger(enabled)
+
+@sio.event
 async def disconnect(sid):
     print(f"Client disconnected: {sid}")
 

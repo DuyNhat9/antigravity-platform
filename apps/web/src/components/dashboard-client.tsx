@@ -55,14 +55,24 @@ export default function DashboardClient() {
        setLogs(prev => [...prev, { ...log, timestamp: Date.now() }])
     })
 
+    socket.on("config_updated", (data: { auto_trigger_enabled: boolean }) => {
+      setAutoTrigger(data.auto_trigger_enabled)
+    })
+
     return () => {
       socket.off("connect")
       socket.off("disconnect")
       socket.off("task_added")
       socket.off("task_updated")
       socket.off("agent_log")
+      socket.off("config_updated")
     }
   }, [])
+
+  const handleToggleAutoTrigger = (enabled: boolean) => {
+    setAutoTrigger(enabled)
+    socket.emit("toggle_auto_trigger", { enabled })
+  }
 
   // Auto-scroll logs
   useEffect(() => {
@@ -112,7 +122,7 @@ export default function DashboardClient() {
                 <Switch 
                     id="auto-trigger" 
                     checked={autoTrigger} 
-                    onCheckedChange={setAutoTrigger}
+                    onCheckedChange={handleToggleAutoTrigger}
                 />
             </div>
             <Badge variant={isConnected ? "default" : "destructive"} className="px-4 py-1.5 text-sm uppercase tracking-wider">

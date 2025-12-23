@@ -6,6 +6,12 @@ class Blackboard:
     def __init__(self):
         self.tasks: List[Task] = []
         self.logs: Dict[str, List[str]] = {}
+        self.auto_trigger_enabled = False
+
+    async def set_auto_trigger(self, enabled: bool):
+        self.auto_trigger_enabled = enabled
+        await sio.emit("config_updated", {"auto_trigger_enabled": enabled})
+        await self.add_log("System", f"Auto-Trigger Mode: {'ENABLED' if enabled else 'DISABLED'}")
 
     async def add_task(self, task: Task):
         self.tasks.append(task)
