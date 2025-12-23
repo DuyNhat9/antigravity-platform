@@ -6,7 +6,7 @@ import { io } from "socket.io-client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Terminal, Shield, Cpu, Activity } from "lucide-react"
+import { Terminal, Shield, Cpu, Activity, Zap, HardDrive } from "lucide-react"
 
 const socket = io("http://localhost:8000")
 
@@ -23,6 +23,7 @@ export default function AgentPage() {
   
   const [logs, setLogs] = useState<Log[]>([])
   const [status, setStatus] = useState("idle")
+  const [currentTask, setCurrentTask] = useState<any>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -42,9 +43,19 @@ export default function AgentPage() {
       }
     })
 
+    socket.on("task_assigned", (data: any) => {
+      setCurrentTask(data.task)
+      setLogs(prev => [...prev, { 
+        agent: "System", 
+        message: `MISSION RECEIVED: ${data.task.description}`, 
+        timestamp: Date.now() 
+      }])
+    })
+
     return () => {
       socket.off("agent_log")
       socket.off("agent_updated")
+      socket.off("task_assigned")
     }
   }, [agentId, role])
 
@@ -78,14 +89,33 @@ export default function AgentPage() {
 
       <div className="grid grid-cols-1 gap-6">
         <Card className="bg-slate-950 border-slate-800 shadow-2xl">
-          <CardHeader className="py-3 border-b border-slate-900">
+          <CardHeader className="py-3 border-b border-slate-900 flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
               <Terminal className="w-4 h-4 text-purple-400" />
               <CardTitle className="text-sm font-medium">Neural Execution Stream</CardTitle>
             </div>
+            {currentTask && (
+              <Badge variant="outline" className="text-[10px] border-purple-500/30 text-purple-400 gap-1 bg-purple-500/5">
+                <Zap className="w-3 h-3" /> ACTIVE_TASK
+              </Badge>
+            )}
           </CardHeader>
           <CardContent className="p-0">
-            <ScrollArea className="h-[650px] p-4" ref={scrollRef}>
+            {currentTask && (
+              <div className="p-4 bg-purple-500/5 border-b border-slate-900">
+                <div className="flex items-center gap-2 mb-1">
+                  <HardDrive className="w-3 h-3 text-purple-400" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Current Mandate</span>
+                </div>
+                <div className="text-sm font-semibold text-purple-300">
+                  {currentTask.description}
+                </div>
+                <div className="text-[10px] font-mono text-slate-600 mt-1">
+                  OBJECTIVE_ID: {currentTask.id}
+                </div>
+              </div>
+            )}
+            <ScrollArea className="h-[550px] p-4" ref={scrollRef}>
               <div className="space-y-2 font-mono text-xs">
                 {logs.length === 0 && (
                   <p className="text-slate-600 italic">Awaiting neural signals...</p>
