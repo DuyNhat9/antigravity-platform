@@ -10,6 +10,7 @@ from fastapi.responses import Response
 
 # Initialize Socket.IO logic here if needed
 
+from apps.api.app.services.blackboard import blackboard
 from apps.api.app.services.orchestrator import orchestrator
 from apps.api.app.services.commander import commander
 from apps.api.app.services.mcp_server import mcp_server
@@ -17,6 +18,9 @@ from pydantic import BaseModel
 
 class PlanRequest(BaseModel):
     prompt: str
+
+class AgentRequest(BaseModel):
+    role: str
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -51,6 +55,11 @@ async def create_plan(request: PlanRequest):
     await commander.plan(request.prompt)
     return {"status": "planning_started"}
 
+@app.post("/api/v1/agents/create")
+async def create_agent(request: AgentRequest):
+    agent = await blackboard.register_agent(request.role)
+    return agent.model_dump()
+
 # MCP SSE Endpoints
 sse = SseServerTransport("/mcp/messages")
 
@@ -72,6 +81,13 @@ async def connect(sid, environ):
 async def toggle_auto_trigger(sid, data):
     enabled = data.get("enabled", False)
     await blackboard.set_auto_trigger(enabled)
+
+@sio.event
+async def join_agent_room(sid, data):
+    agent_id = data.get("agent_id")
+    if agent_id:
+        sio.enter_room(sid, agent_id)
+        print(f"Client {sid} joined room: {agent_id}")
 
 @sio.event
 async def disconnect(sid):

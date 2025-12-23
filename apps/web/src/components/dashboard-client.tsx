@@ -11,6 +11,7 @@ import { Share2, Terminal, Activity, CheckCircle2, CircleDashed, AlertCircle, Lo
 import { CommandInput } from "./command-input"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { AgentManager } from "./agent-manager"
 
 const socket = io("http://localhost:8000")
 
@@ -31,8 +32,16 @@ interface Log {
   timestamp: number
 }
 
+interface Agent {
+  id: string
+  role: string
+  status: string
+  window_id: string
+}
+
 export default function DashboardClient() {
   const [tasks, setTasks] = useState<Task[]>([])
+  const [agents, setAgents] = useState<Agent[]>([])
   const [logs, setLogs] = useState<Log[]>([])
   const [isConnected, setIsConnected] = useState(false)
   const [autoTrigger, setAutoTrigger] = useState(false)
@@ -59,6 +68,14 @@ export default function DashboardClient() {
       setAutoTrigger(data.auto_trigger_enabled)
     })
 
+    socket.on("agent_added", (agent: Agent) => {
+      setAgents(prev => [...prev, agent])
+    })
+
+    socket.on("agent_updated", (updatedAgent: Agent) => {
+      setAgents(prev => prev.map(a => a.id === updatedAgent.id ? updatedAgent : a))
+    })
+
     return () => {
       socket.off("connect")
       socket.off("disconnect")
@@ -66,6 +83,8 @@ export default function DashboardClient() {
       socket.off("task_updated")
       socket.off("agent_log")
       socket.off("config_updated")
+      socket.off("agent_added")
+      socket.off("agent_updated")
     }
   }, [])
 
@@ -132,6 +151,8 @@ export default function DashboardClient() {
       </header>
       
       <CommandInput />
+
+      <AgentManager agents={agents} />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Tasks */}

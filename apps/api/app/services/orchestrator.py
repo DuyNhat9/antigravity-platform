@@ -2,6 +2,8 @@ import asyncio
 from .blackboard import blackboard
 from .automation import automation
 from ..models.task import TaskStatus
+from ..models.agent import AgentStatus
+from ..core.socket import sio
 
 class Orchestrator:
     def __init__(self):
@@ -52,11 +54,18 @@ class Orchestrator:
             await blackboard.add_log(task.role, f"ERROR: System breach or failure: {str(e)}")
 
     async def _dispatch_to_worker(self, task):
-        # 1. Real UI Trigger (AppleScript)
+        # Find an available agent for this role
+        target_agent = next((a for a in blackboard.agents if a.role == task.role and a.status == AgentStatus.IDLE), None)
+        
+        if target_agent:
+            await blackboard.add_log("Orchestrator", f"Dispatching mission to targeted Node: {target_agent.id}")
+            await blackboard.update_agent_status(target_agent.id, AgentStatus.BUSY, task_id=task.id)
+            # Emit specifically to the agent's room
+            await sio.emit("task_assigned", {"task": task.model_dump()}, room=target_agent.id)
+        
+        # We still perform UI trigger for the main IDE window as a parallel/fallback
         await automation.trigger_agent(task.role, task.description)
         
-        # 2. Waiting for MCP callback (Task will be updated to DONE via mcp_server.py)
-        # For now, we return a message that we are waiting for the IDE agent.
         return f"Awaiting mission report from IDE Agent ({task.role})..."
 
 # Singleton

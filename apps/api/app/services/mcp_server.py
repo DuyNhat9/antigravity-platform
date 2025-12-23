@@ -3,6 +3,7 @@ import mcp.types as types
 from typing import Optional
 from .blackboard import blackboard
 from ..models.task import TaskStatus
+from ..models.agent import AgentStatus
 
 # Create an MCP Server
 mcp_server = Server("antigravity-orchestrator")
@@ -76,6 +77,13 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
         result = arguments.get("result")
         
         await blackboard.update_task_status(task_id, TaskStatus.DONE, result=result)
+        
+        # Free up the agent if we can find it
+        for agent in blackboard.agents:
+            if agent.current_task_id == task_id:
+                await blackboard.update_agent_status(agent.id, AgentStatus.IDLE)
+                break
+
         await blackboard.add_log("System", f"Task {task_id} completed via MCP.")
         return [types.TextContent(type="text", text="Completion reported successfully.")]
 
