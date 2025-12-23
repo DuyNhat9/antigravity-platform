@@ -33,6 +33,29 @@ async def list_tools() -> list[types.Tool]:
                 },
                 "required": ["task_id", "result"]
             }
+        ),
+        types.Tool(
+            name="send_command",
+            description="Allows an agent to assign a task to another agent.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "target_role": {"type": "string", "description": "The role to receive the task"},
+                    "description": {"type": "string", "description": "Details of the command"}
+                },
+                "required": ["target_role", "description"]
+            }
+        ),
+        types.Tool(
+            name="poll_tasks",
+            description="Checks for available tasks for a specific role.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "role": {"type": "string", "description": "The role to poll for"}
+                },
+                "required": ["role"]
+            }
         )
     ]
 
@@ -54,6 +77,25 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
         
         await blackboard.update_task_status(task_id, TaskStatus.DONE, result=result)
         await blackboard.add_log("System", f"Task {task_id} completed via MCP.")
-        return [types.TextContent(type="text", text="Completion reported successfully. Mission continues.")]
+        return [types.TextContent(type="text", text="Completion reported successfully.")]
+
+    elif name == "send_command":
+        target = arguments.get("target_role")
+        desc = arguments.get("description")
+        from ..models.task import Task
+        import uuid
+        
+        new_task = Task(id=str(uuid.uuid4())[:8], description=desc, role=target)
+        await blackboard.add_task(new_task)
+        await blackboard.add_log("System", f"Command issued to {target}: {desc}")
+        return [types.TextContent(type="text", text=f"Command registered with ID: {new_task.id}")]
+
+    elif name == "poll_tasks":
+        role = arguments.get("role")
+        pending = [t for t in blackboard.tasks if t.role == role and t.status == TaskStatus.PENDING]
+        
+        if pending:
+            return [types.TextContent(type="text", text=f"FOUND: {len(pending)} tasks.", data=pending[0].model_dump())]
+        return [types.TextContent(type="text", text="NO_TASKS")]
 
     return [types.TextContent(type="text", text=f"Unknown tool: {name}")]

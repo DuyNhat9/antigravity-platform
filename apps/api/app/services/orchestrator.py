@@ -37,14 +37,15 @@ class Orchestrator:
         ]
 
     async def _execute_task(self, task):
+        # In Phase 5, if 'Autonomous Mode' is handled by individual agent pollers,
+        # the orchestrator acts more as a tracker/coordinator.
+        
         await blackboard.add_log(task.role, f"Switching to active status: {task.description}")
         await blackboard.update_task_status(task.id, TaskStatus.IN_PROGRESS)
         
         try:
-            # Dispatch to real agent (Triggers UI)
+            # If we are using local development with UI Triggers:
             await self._dispatch_to_worker(task)
-            # We DON'T set status to DONE here. 
-            # The IDE agent will call submit_task_completion via MCP to mark it DONE.
             await blackboard.add_log(task.role, f"Mandate transmitted to IDE. Awaiting report...")
         except Exception as e:
             await blackboard.update_task_status(task.id, TaskStatus.ERROR, result=str(e))

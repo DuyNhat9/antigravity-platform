@@ -7,8 +7,10 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { motion, AnimatePresence } from "framer-motion"
-import { Share2, Terminal, Activity, CheckCircle2, CircleDashed, AlertCircle, Loader2, Sparkles } from "lucide-react"
+import { Share2, Terminal, Activity, CheckCircle2, CircleDashed, AlertCircle, Loader2, Sparkles, Zap, ShieldCheck, ShieldAlert } from "lucide-react"
 import { CommandInput } from "./command-input"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 
 const socket = io("http://localhost:8000")
 
@@ -33,6 +35,7 @@ export default function DashboardClient() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [logs, setLogs] = useState<Log[]>([])
   const [isConnected, setIsConnected] = useState(false)
+  const [autoTrigger, setAutoTrigger] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -100,9 +103,22 @@ export default function DashboardClient() {
              <p className="text-muted-foreground">Multi-Agent Orchestration Platform</p>
           </div>
         </div>
-        <Badge variant={isConnected ? "default" : "destructive"} className="px-4 py-1.5 text-sm uppercase tracking-wider">
-            {isConnected ? "System Online" : "System Offline"}
-        </Badge>
+        <div className="flex items-center gap-6">
+            <div className="flex items-center space-x-2 bg-slate-900/50 p-2 px-4 rounded-full border border-slate-800">
+                {autoTrigger ? <ShieldCheck className="w-4 h-4 text-green-400" /> : <ShieldAlert className="w-4 h-4 text-slate-500" />}
+                <Label htmlFor="auto-trigger" className="text-xs font-bold uppercase tracking-widest cursor-pointer">
+                    Auto-Trigger {autoTrigger ? "ON" : "OFF"}
+                </Label>
+                <Switch 
+                    id="auto-trigger" 
+                    checked={autoTrigger} 
+                    onCheckedChange={setAutoTrigger}
+                />
+            </div>
+            <Badge variant={isConnected ? "default" : "destructive"} className="px-4 py-1.5 text-sm uppercase tracking-wider">
+                {isConnected ? "System Online" : "System Offline"}
+            </Badge>
+        </div>
       </header>
       
       <CommandInput />
