@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Plus, Users, ExternalLink } from "lucide-react"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
 interface Agent {
@@ -31,7 +31,10 @@ export function AgentManager({ agents }: { agents: Agent[] }) {
       
       if (response.ok) {
         const agent = await response.json()
-        window.open(`/agent?agent_id=${agent.id}&role=${agent.role}`, "_blank", "width=600,height=800")
+        const win = window.open(`/agent?agent_id=${agent.id}&role=${agent.role}`, "_blank", "width=600,height=800")
+        if (!win || win.closed || typeof win.closed === 'undefined') {
+          alert("Popup blocked! Please allow popups for this site to open the Agent Node window.")
+        }
       }
     } catch (error) {
       console.error("Failed to create agent:", error)
@@ -46,6 +49,7 @@ export function AgentManager({ agents }: { agents: Agent[] }) {
         <div className="flex items-center gap-2">
           <Users className="w-5 h-5 text-purple-400" />
           <CardTitle className="text-lg">Agent Registry</CardTitle>
+          <CardDescription className="text-[10px] text-slate-500 uppercase tracking-wider">Deploy individual browser nodes for each agent</CardDescription>
         </div>
         <Button size="sm" onClick={handleCreateAgent} disabled={loading} className="gap-1">
           <Plus className="w-4 h-4" /> Deploy Agent

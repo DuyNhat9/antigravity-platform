@@ -90,6 +90,13 @@ async def join_agent_room(sid, data):
         print(f"Client {sid} joined room: {agent_id}")
 
 @sio.event
+async def agent_log(sid, data):
+    agent = data.get("agent")
+    message = data.get("message")
+    if agent and message:
+        await blackboard.add_log(agent, message)
+
+@sio.event
 async def disconnect(sid):
     print(f"Client disconnected: {sid}")
 
