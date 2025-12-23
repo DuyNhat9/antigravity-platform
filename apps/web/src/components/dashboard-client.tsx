@@ -12,7 +12,7 @@ import { CommandInput } from "./command-input"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 
-const socket = io("http://localhost:8080")
+const socket = io("http://localhost:8000")
 
 type TaskStatus = "pending" | "in_progress" | "done" | "error"
 

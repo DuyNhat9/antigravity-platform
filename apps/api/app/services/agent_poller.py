@@ -11,7 +11,7 @@ from app.services.blackboard import blackboard
 from app.models.task import TaskStatus
 
 # Configuration
-API_BASE_URL = "http://localhost:8080"
+API_BASE_URL = "http://localhost:8000"
 POLL_INTERVAL = 5  # Seconds
 
 async def poll_mcp_for_tasks(role: str):
