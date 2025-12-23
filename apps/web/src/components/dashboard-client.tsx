@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { motion, AnimatePresence } from "framer-motion"
-import { Share2, Terminal, Activity, CheckCircle2, CircleDashed, AlertCircle, Loader2 } from "lucide-react"
+import { Share2, Terminal, Activity, CheckCircle2, CircleDashed, AlertCircle, Loader2, Sparkles } from "lucide-react"
+import { CommandInput } from "./command-input"
 
 const socket = io("http://localhost:8000")
 
@@ -103,6 +104,8 @@ export default function DashboardClient() {
             {isConnected ? "System Online" : "System Offline"}
         </Badge>
       </header>
+      
+      <CommandInput />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Tasks */}

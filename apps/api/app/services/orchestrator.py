@@ -1,5 +1,6 @@
 import asyncio
 from .blackboard import blackboard
+from .automation import automation
 from ..models.task import TaskStatus
 
 class Orchestrator:
@@ -36,14 +37,26 @@ class Orchestrator:
         ]
 
     async def _execute_task(self, task):
-        await blackboard.add_log(task.role, f"Starting task: {task.description}")
+        await blackboard.add_log(task.role, f"Switching to active status: {task.description}")
         await blackboard.update_task_status(task.id, TaskStatus.IN_PROGRESS)
         
-        # Simulate work
-        await asyncio.sleep(2) 
+        try:
+            # Dispatch to real agent (Triggers UI)
+            await self._dispatch_to_worker(task)
+            # We DON'T set status to DONE here. 
+            # The IDE agent will call submit_task_completion via MCP to mark it DONE.
+            await blackboard.add_log(task.role, f"Mandate transmitted to IDE. Awaiting report...")
+        except Exception as e:
+            await blackboard.update_task_status(task.id, TaskStatus.ERROR, result=str(e))
+            await blackboard.add_log(task.role, f"ERROR: System breach or failure: {str(e)}")
+
+    async def _dispatch_to_worker(self, task):
+        # 1. Real UI Trigger (AppleScript)
+        await automation.trigger_agent(task.role, task.description)
         
-        await blackboard.update_task_status(task.id, TaskStatus.DONE, result="Completed by Agent")
-        await blackboard.add_log(task.role, f"Finished task: {task.id}")
+        # 2. Waiting for MCP callback (Task will be updated to DONE via mcp_server.py)
+        # For now, we return a message that we are waiting for the IDE agent.
+        return f"Awaiting mission report from IDE Agent ({task.role})..."
 
 # Singleton
 orchestrator = Orchestrator()
