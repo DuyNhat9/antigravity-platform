@@ -36,13 +36,27 @@ class AutomationService:
         delay 1.0
         tell application "System Events"
             tell process "{self.app_name}"
-                -- Open Chat (Cmd+L for Cursor/Antigravity)
+                -- 1. Press Escape multiple times to exit any open menus or focus in editor
+                key code 53 
+                delay 0.2
+                key code 53
+                delay 0.5
+                
+                -- 2. Open/Focus Chat (Cmd+L)
                 keystroke "l" using {{command down}}
                 delay 1.0
-                -- Type the mandate
+                
+                -- 3. Clear existing text in chat box (Cmd+A -> Backspace)
+                keystroke "a" using {{command down}}
+                delay 0.2
+                key code 51
+                delay 0.3
+                
+                -- 4. Type the mission mandate
                 keystroke "{prompt}"
                 delay 0.5
-                -- Enter to send
+                
+                -- 5. Final Enter to send
                 key code 36
             end tell
         end tell
